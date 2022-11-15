@@ -60,12 +60,9 @@ spec:
             httpGet:
               path: /cadastrapp/services/getConfiguration
               port: http-proxy
-          {{- if .Values.cadastrapp.env_variables }}
+          {{- with .Values.cadastrapp.env_variables }}
           env:
-            {{- range $k, $v := .Values.cadastrapp.env_variables }}
-            - name: {{ $k }}
-              value: {{ $v | quote }}
-            {{- end }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
           volumeMounts:
             - name: georchestra-datadir
