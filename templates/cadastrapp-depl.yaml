@@ -44,6 +44,22 @@ spec:
         - mountPath: /ssh-secret
           name: ssh-secret
         {{- end }}
+      - name: init-cadastrapp-webapp
+        image: {{ .Values.cadastrapp.image }}
+        imagePullPolicy: {{ .Values.cadastrapp.imagePullPolicy }}
+        command:
+        - /bin/bash
+        args:
+        - -c
+        - cp -rv /var/lib/jetty/webapps/cadastrapp/* /mnt/cadastrapp ;
+          if [ -f /etc/georchestra/cadastrapp/jetty-env.xml ] ; then
+            cp /etc/georchestra/cadastrapp/jetty-env.xml /mnt/cadastrapp/WEB-INF/jetty-env.xml ;
+          fi ;
+        volumeMounts:
+        - name: georchestra-datadir
+          mountPath: /etc/georchestra
+        - name: cadastrapp-webapp
+          mountPath: /mnt/cadastrapp
       containers:
         - name: cadastrapp
           image: {{ .Values.cadastrapp.image }}
@@ -67,8 +83,12 @@ spec:
           volumeMounts:
             - name: georchestra-datadir
               mountPath: /etc/georchestra
+            - name: cadastrapp-webapp
+              mountPath: /var/lib/jetty/webapps/cadastrapp
       volumes:
         - name: georchestra-datadir
+          emptyDir: {}
+        - name: cadastrapp-webapp
           emptyDir: {}
         {{- if .Values.cadastrapp.datadir.git.ssh_secret }}
         - name: ssh-secret
